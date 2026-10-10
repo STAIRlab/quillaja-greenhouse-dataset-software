@@ -1,6 +1,6 @@
 # Quillaja greenhouse dataset software
 
-Portable reproduction and validation utilities for **Longitudinal greenhouse images and environmental records of Quillaja saponaria**. Software version: **1.0.0**. Creator and developer: **Fan Hu** (ORCID: 0000-0002-5336-0670). Contributor: **Khalid M. Mosalam** (ORCID: 0000-0003-2988-2361); roles: **Supervision; Project administration**. This is a separate local software release candidate; the repository URL will be supplied when available. No remote publication is implied.
+Portable reproduction and validation utilities for **Longitudinal greenhouse images and environmental records of Quillaja saponaria**. Software version: **1.0.0**. Creator and developer: **Fan Hu** (ORCID: 0000-0002-5336-0670). Contributor: **Khalid M. Mosalam** (ORCID: 0000-0003-2988-2361); roles: **Supervision; Project administration**. This repository contains the public software release v1.0.0.
 
 MIT License, Copyright (c) 2026 The Regents of the University of California. See `LICENSE`. The separate dataset, metadata and documentation record uses CC BY 4.0; this software package does not contain the dataset images or environmental measurements.
 
