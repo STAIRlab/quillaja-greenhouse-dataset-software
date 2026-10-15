@@ -6,6 +6,7 @@ from datetime import datetime
 import json
 from pathlib import Path
 from common import IMAGE_FIELDS, checked_public, derive, read_csv, write_csv_new
+from image_notes import validate_notes_rows
 
 
 def validate_tables(dataset):
@@ -54,8 +55,13 @@ def validate_tables(dataset):
         if row['time_interval_start']!=row['before_timestamp_recorded'] or row['time_interval_end']!=row['after_timestamp_recorded'] or row['time_interval_start']>=row['time_interval_end']:
             raise ValueError('Event clock bounds disagree')
         if not set(json.loads(row['affected_anchor_ids'] or '[]'))<=anchor_ids: raise ValueError('Unknown event anchor')
+    plan=json.loads((dataset/'package_plan.json').read_text())
+    notes_path=dataset/'metadata__image_notes.csv'
+    if 'image_masking' in plan and not notes_path.is_file():raise ValueError('Missing required image notes')
+    notes_summary,_=validate_notes_rows(read_csv(notes_path) if notes_path.is_file() else [],public,images,plan)
     return {'passed':True,'images':len(public),'cameras':dict(Counter(r['camera_id'] for r in public)),
-            'hobo_records':len(hobo),'reference_anchors':len(anchors),'scene_events':len(events)}, public
+            'hobo_records':len(hobo),'reference_anchors':len(anchors),'scene_events':len(events),
+            'image_notes':notes_summary,'logical_jpeg_bytes':sum(int(r['file_size_bytes']) for r in public)}, public
 
 
 def main():

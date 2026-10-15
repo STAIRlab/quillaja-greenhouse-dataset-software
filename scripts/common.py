@@ -2,6 +2,7 @@
 import csv
 from datetime import date
 import hashlib
+import json
 from pathlib import Path, PurePosixPath
 import re
 IMAGE_FIELDS = "release_id public_filename public_archive camera_id view date camera_timestamp_recorded original_filename original_relative_path file_size_bytes width height sequence_index".split()
@@ -50,7 +51,18 @@ def write_csv_new(path, fields, rows):
     with path.open('x',encoding='utf-8',newline='') as f:
         w=csv.DictWriter(f,fieldnames=fields);w.writeheader();w.writerows(rows)
 
-def checked_public(path):
+def verify_plan_scope(rows, plan):
+    """Verify released sizes against the supplied plan, retaining scope checks."""
+    from collections import Counter
+    scope=plan['image_scope']
+    if scope['total_images']!=len(rows) or scope['camera_counts']!=dict(Counter(r['camera_id'] for r in rows)):
+        raise ValueError('Package plan image scope disagreement')
+    total=sum(int(r['file_size_bytes']) for r in rows)
+    if any(int(r['file_size_bytes'])<=0 for r in rows) or not isinstance(scope['logical_jpeg_bytes'],int) or scope['logical_jpeg_bytes']!=total:
+        raise ValueError('Package plan logical payload mismatch')
+    return total
+
+def checked_public(path, plan=None):
     rows=read_csv(path)
     from collections import Counter
     if len(rows)!=38177 or Counter(r['camera_id'] for r in rows)!={'GH-1':19084,'GH-2':19093}:
@@ -66,6 +78,9 @@ def checked_public(path):
             raise ValueError('Archive camera/month mismatch')
         if not '2023-05-30'<=r['date']<='2023-10-10' or r['view']!={'GH-1':'top','GH-2':'side'}[r['camera_id']] or (r['width'],r['height'])!=('2560','1440'):
             raise ValueError('Date/view/dimensions mismatch')
-    if len({r['public_archive'] for r in rows})!=12 or sum(int(r['file_size_bytes']) for r in rows)!=84603653273:
-        raise ValueError('Archive count or logical payload mismatch')
+    if len({r['public_archive'] for r in rows})!=12:
+        raise ValueError('Archive count mismatch')
+    if plan is None:
+        plan=json.loads((Path(path).parent/'package_plan.json').read_text())
+    verify_plan_scope(rows,plan)
     return rows

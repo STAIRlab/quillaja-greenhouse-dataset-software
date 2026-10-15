@@ -1,12 +1,12 @@
 # Quillaja greenhouse dataset software
 
-Portable reproduction and validation utilities for **Longitudinal greenhouse images and environmental records of Quillaja saponaria**. Software version: **1.0.0**. Creator and developer: **Fan Hu** (ORCID: 0000-0002-5336-0670). Contributor: **Khalid M. Mosalam** (ORCID: 0000-0003-2988-2361); roles: **Supervision; Project administration**. This repository contains the public software release v1.0.0.
+Portable reproduction and validation utilities for **Longitudinal greenhouse images and environmental records of Quillaja saponaria**. Software version: **1.0.1**. Creator and developer: **Fan Hu** (ORCID: 0000-0002-5336-0670). Contributor: **Khalid M. Mosalam** (ORCID: 0000-0003-2988-2361); roles: **Supervision; Project administration**. This repository contains the public software release v1.0.1.
 
 MIT License, Copyright (c) 2026 The Regents of the University of California. See `LICENSE`. The separate dataset, metadata and documentation record uses CC BY 4.0; this software package does not contain the dataset images or environmental measurements.
 
 ## Environment
 
-Use Python 3.11 or newer for the complete environment (the pinned NumPy 2.3.5 requires Python ≥3.11). Timestamp inference was tested with Python 3.12.14. The standard-library-only utilities also run on Python 3.10. Manifest validation, temporal completeness and byte-preserving packaging use the standard library. Timestamp inference additionally uses the pinned packages in `requirements.txt`:
+Use Python 3.11 or newer for the complete environment (the pinned NumPy 2.3.5 requires Python ≥3.11). Timestamp inference was tested with Python 3.12.14. The standard-library-only utilities also run on Python 3.10. Manifest validation, temporal completeness and byte-preserving packaging use the standard library. Timestamp inference, green-pixel-fraction computation and mask reproduction use the pinned packages in `requirements.txt`:
 
 ```sh
 python3 -m venv .venv
@@ -29,7 +29,7 @@ The first command deterministically derives the public image manifest from the d
 
 ## Archive validation
 
-The 69-file Zenodo dataset directly deposits only two complete canonical monthly archives: `QUI_GH1_2023-05.tar.gz` and `QUI_GH2_2023-05.tar.gz`. The ten June–October camera/month archives are deposited as multipart byte streams. Reconstruct each required canonical archive according to the dataset README and `archive_parts.json`, then verify its byte size and SHA-256 against that reconstruction metadata before using it as a complete archive.
+The 70-file Zenodo dataset directly deposits only two complete canonical monthly archives: `QUI_GH1_2023-05.tar.gz` and `QUI_GH2_2023-05.tar.gz`. The ten June–October camera/month archives are deposited as multipart byte streams. Reconstruct each required canonical archive according to the dataset README and `archive_parts.json`, then verify its byte size and SHA-256 against that reconstruction metadata before using it as a complete archive.
 
 Selected `--archive` validation against the deposited `checksums__SHA256SUMS.txt` ledger directly supports the two May archives. For example:
 
@@ -39,9 +39,9 @@ python3 scripts/validate_public_release.py --dataset ../dataset --archive QUI_GH
 
 This selected-archive command validates the manifest tables, that archive's hash and exact member list, canonical names, byte sizes and readable payloads. With `--source-root ../images`, each archived JPEG's SHA-256 is additionally compared to its extracted canonical source file.
 
-The deposited checksum ledger lists the June–October parts, not their reconstructed canonical archive names. Consequently, version 1.0.0 does not support selecting a reconstructed June–October archive with `--archive`, even after successful reconstruction. Verify each reconstructed archive first using its recorded size and `archive_sha256` in `archive_parts.json`; do not add reconstructed archive entries to the deposited checksum ledger.
+The deposited checksum ledger lists the June–October parts, not their reconstructed canonical archive names. Consequently, version 1.0.1 does not support selecting a reconstructed June–October archive with `--archive`, even after successful reconstruction. Verify each reconstructed archive first using its recorded size and `archive_sha256` in `archive_parts.json`; do not add reconstructed archive entries to the deposited checksum ledger.
 
-`--payloads` requires **all twelve complete canonical monthly archives** in `../dataset`. Starting from the 69-file deposit, reconstruct the ten June–October archives locally and verify them as described above before running this mode. Keep all 69 deposited files available in that directory as well: `--payloads` first checks the deposited-file ledger, then reads the twelve complete archive payloads. It does not reconstruct multipart files automatically and can take substantial time. No JPEG decoding/re-encoding is used. Reports state the scope; a selected archive is not a full-release test.
+`--payloads` requires **all twelve complete canonical monthly archives** in `../dataset`. Starting from the 70-file deposit, reconstruct the ten June–October archives locally and verify them as described above before running this mode. Keep all 70 deposited files available in that directory as well: `--payloads` first checks the deposited-file ledger, then reads the twelve complete archive payloads. It does not reconstruct multipart files automatically and can take substantial time. No JPEG decoding/re-encoding is used. Reports state the scope; a selected archive is not a full-release test.
 
 ## Rebuild a monthly archive
 
@@ -62,4 +62,44 @@ Repeat `--release-id` for an explicit set, or use `--all` for full inference whe
 
 ## Scope and provenance
 
-These tools preserve the published data model, source-preserving packaging rules and original timestamp inference core. `common.derive`, timestamp parsing and glyph recognition are reused from the research workflow; portable command interfaces accept public paths. This is a reproducibility subset, not the author's entire research workspace. Historical video extraction and workbook parsing are outside scope because those original sources are not deposited. Spatial reference positions and scene events are supplied observations, not regenerated annotations. No image enhancement, segmentation, geometric calibration or biological estimation is performed.
+These tools preserve the published data model, the original timestamp inference core, and byte-preserving packaging of the selected released JPEGs. Version 1.0.1 additionally supports documented head masking and the fixed-region green-pixel fraction. `common.derive`, timestamp parsing and glyph recognition are reused from the research workflow; portable command interfaces accept public paths. This is a reproducibility subset, not the author's entire research workspace. Historical video extraction and workbook parsing are outside scope because those original sources are not deposited. Spatial reference positions and scene events are supplied observations, not regenerated annotations. No image enhancement, geometric calibration or biological estimation is performed. The green-pixel fraction is a colour-classified image index, not calibrated ground cover. Masking reproduces documented author-approved rectangles; it does not run a detector or infer new boxes.
+
+## Masked-release validation (v1.0.1)
+
+Released JPEG byte totals are checked against `package_plan.json` instead of a fixed original-byte constant. The 38,177-image scope, camera counts, canonical IDs, dimensions and archive memberships remain checked. `metadata__image_notes.csv` is validated for known IDs, note types, duplicate keys, nonempty descriptions, MCU geometry and timestamp protection. Updated detailed metadata retains `original_file_size_bytes` as extraction provenance; released `file_size_bytes` must agree with the public image manifest. Keep `package_plan.json` beside a public manifest used by any command.
+
+You may store the twelve complete canonical archives separately from the 70-file flat deposit. This avoids placing reconstructed archives in the upload directory:
+
+```sh
+python3 scripts/validate_public_release.py --dataset ../dataset --archives-dir ../complete_archives --payloads --image-hashes-out results/jpeg_sha256.csv --out results/full_validation.json
+```
+
+This validates every deposited checksum, complete archive hash/size and payload member. The optional CSV records each observed JPEG SHA-256 for comparison with an independently frozen source ledger. It does not itself establish provenance without that independent reference. Existing selected `--archive` ledger limitations for June–October remain; use `--payloads` for all reconstructed archives.
+
+## Apply documented head masks
+
+Mask reproduction requires the original unmasked canonical JPEGs, which are author-held inputs and are not supplied by the masked deposit. A masked JPEG cannot recover those originals. `jpegtran` must be installed separately (libjpeg-turbo 3.2.0 was used for the release). The script creates only the affected copies, with no new padding, head-box inference or keep-area recomputation:
+
+```sh
+python3 scripts/apply_head_masks.py --dataset ../dataset --images-dir ../unmasked_images --output-dir results/masked_images
+```
+
+The actual xyxy wipe rectangles are read from `person_masked` rows in `metadata__image_notes.csv`. Grey DCT blocks are written using `jpegtran -copy none -optimize -wipe`; quantization and geometry are retained. Existing outputs are refused. The report records source/output hashes and the tool version. Use these verified copies alongside unchanged original JPEGs for an archive rebuild; the package manifest records released sizes.
+
+## Green-pixel fraction
+
+The fixed polygon and colour thresholds are in `resources/green_fraction_region.json`. The colour rule follows Patrignani and Ochsner (2015), [Canopeo](https://doi.org/10.2134/agronj15.0150). This command reproduces GH-1 daily medians over 15:00 to 18:00 on complete acquisition-window dates at half scale. It can read complete archives directly or use `--images-dir` for canonical extracted JPEGs:
+
+```sh
+python3 scripts/green_pixel_fraction.py --dataset ../dataset --archives-dir ../complete_archives --out-dir results/green_fraction
+```
+
+Outputs are per-frame values and source hashes, daily medians, and a summary including the detrended day-to-day noise. The strict 8-bit RGB rule is R/G<0.95, B/G<0.95 and 2G−R−B>20. Minute endpoints are inclusive despite second-level timestamp jitter; missing slots are not imputed. The region covers 71.6068% of the saved image. Uncorrected wide-angle geometry and growth toward the camera prevent interpretation as calibrated ground cover.
+
+## Tests
+
+```sh
+python3 -B -m unittest discover -s tests -v
+```
+
+The tests cover changing package totals without weakening scope checks, note/geometry rejection, colour thresholds, the fixed polygon, window endpoints and lossless mask behavior. The DCT test is skipped only when `jpegtran` is unavailable. Version 1.0.0 remains an unchanged prior release.

@@ -1,0 +1,73 @@
+{
+  "reference_release_id": "QUI_GH1_20230530_0001",
+  "coordinate_system": "Original 2560x1440 saved frame; pixel x rightward, y downward",
+  "polygon_xy": [
+    [
+      590,
+      0
+    ],
+    [
+      2558,
+      0
+    ],
+    [
+      2558,
+      1120
+    ],
+    [
+      2370,
+      1190
+    ],
+    [
+      2170,
+      1250
+    ],
+    [
+      1870,
+      1320
+    ],
+    [
+      1470,
+      1350
+    ],
+    [
+      910,
+      1350
+    ],
+    [
+      660,
+      1320
+    ],
+    [
+      540,
+      1240
+    ],
+    [
+      510,
+      1050
+    ],
+    [
+      510,
+      680
+    ],
+    [
+      540,
+      340
+    ]
+  ],
+  "region_definition": "Visible bench interior, inset from the glazed-wall side and front edge; excludes floor, left-side cables and lower-right timestamp strip",
+  "analysis_scale": 0.5,
+  "image_size_at_analysis": [
+    1280,
+    720
+  ],
+  "colour_rule": {
+    "R_over_G_max_exclusive": 0.95,
+    "B_over_G_max_exclusive": 0.95,
+    "excess_green_min_exclusive": 20
+  },
+  "rule_sources": [
+    "Source dissertation analysis notebook, Data_Summary.ipynb cells10\u201311 (author-held; not included)",
+    "Dissertation chap6.tex lines479\u2013482 (author-held; not included)"
+  ]
+}
